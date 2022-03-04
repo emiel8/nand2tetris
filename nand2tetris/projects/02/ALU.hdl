@@ -42,5 +42,29 @@ CHIP ALU {
         ng; // 1 if (out < 0),  0 otherwise
 
     PARTS:
-   // Put you code here:
+   // Put you code here:	
+	Not16(in=x,out=notx);
+	And16(a=x, b=notx, out=zerox);
+	Mux16(a=x, b=zerox, sel=zx ,out=x1);
+	Not16(in=x1, out=notx1);
+	Mux16(a=x1, b=notx1, sel=nx, out=xpost);
+	
+	Not16(in=y,out=noty);
+ 	And16(a=y, b=noty, out=zeroy);
+ 	Mux16(a=y, b=zeroy, sel=zy ,out=y1);
+	Not16(in=y1, out=noty1);
+ 	Mux16(a=y1, b=noty1, sel=ny, out=ypost);
+
+	Add16(a=xpost, b=ypost, out=added);
+	And16(a=xpost, b=ypost, out=anded);
+	Mux16(a=anded, b=added, sel=f, out=almost);
+	
+	Not16(in=almost, out=notalmost);
+	Mux16(a=almost, b=notalmost, sel=no, out[0..7]= lsb, out[8..15]= msb, out=out); //define MSB and LSB so you can use it for zr and ng bits.
+
+	Or8Way(in=lsb, out=lsbzero);
+	Or8Way(in=msb, out=msbzero);
+	Or(a=lsbzero, b=msbzero, out=notzr);
+	Not(in=notzr, out=zr);
+	And16(a[0..7]=lsb, a[8..15]=msb, b=true, out[15]=ng); 
 }
