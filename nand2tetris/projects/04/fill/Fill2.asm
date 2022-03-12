@@ -15,25 +15,39 @@
 
 (INFINITE)
 
-	@8192
-	D = A // D = 8192
-	@i
-	M = D //8192 == (256*512)/16 'number of rows/registers in the memory map)
-	
-	@addr // pointer to loop over registers of screen memory map
-	M = 0
-
-	
 	// read keyboard register
 	@KBD
 	D = M
 
-	@WRITEWHITE
+	@WHITE
 	D; JEQ // whiten screen if keyboard register is 0 (no key pressed)
 
-	@WRITEBLACK
+	@BLACK
 	0; JMP // Make screen black otherwise (keyboard register != 0)	 
 
+(WHITE)
+	@8192
+	D = A // D = 8192
+	@i
+	M = D //8192 == (256*512)/16 (number of rows in the memory map)
+
+	@addr // pointer to loop over registers of screen memory map
+	M = 0
+
+	@WRITEWHITE
+	0;JMP
+
+(BLACK)
+	@8192
+	D = A
+	@i
+	M = D
+	
+	@addr
+	M = 0
+	
+	@WRITEBLACK
+	0;JMP
 
 (WRITEWHITE)
 
