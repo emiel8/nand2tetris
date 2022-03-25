@@ -28,4 +28,20 @@ CHIP Memory {
 
     PARTS:
     // Put your code here:
+	
+	Not(in=address[13], out=not14);
+	And(a=address[14], b=not14, out=selectScreen);
+	And(a=selectScreen, b=load, out=loadScreen);
+
+	Not(in=address[14], out=not15);
+	And(a=not15, b=load, out=load16K);
+	
+	RAM16K(in=in, load=load16K, address=address[0..13], out=out16K);
+	Screen(in=in, load=loadScreen, address=address[0..12], out=outScreen);
+	Keyboard(out=outKBD);
+	
+	Mux16(a=outScreen, b=outKBD, sel=address[13], out=mux1);
+	
+	Mux16(a=out16K, b=mux1, sel=address[14], out=out);
+
 }

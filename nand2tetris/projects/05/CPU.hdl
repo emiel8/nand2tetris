@@ -40,4 +40,58 @@ CHIP CPU {
 
     PARTS:
     // Put your code here:
+	
+
+	//Logic of writeM
+	And(a=instruction[15], b=instruction[3], out=writeM); //write to Memory if least significant d bit is 1 and is c instruction
+
+	//Logic of the A-Register
+	Or(a=isAinstruction, b=instruction[5], out=loadARegister); //load in A register when A-instruction or when most significant d bit is 1
+	Mux16(a=instruction, b=outputALU, sel=instruction[15], out=inputARegister); //if A instruction, select a-input of mux16, which is the instruction itself
+	ARegister(in=inputARegister, load=loadARegister, out=outputARegister, out[0..14]=addressM);	
+	
+	//Logic of the D-Register
+	Not(in=instruction[15], out=isAinstruction);
+	And(a=instruction[4], b=instruction[15], out=loadDRegister); //load in D-Register when middle d bit is 1 and when it is a C instruction
+	DRegister(in=outputALU, load=loadDRegister, out=outputDRegister);
+
+	//Logic of the ALU
+	
+	Mux16(a=outputARegister, b=inM, sel=instruction[12], out=inputALU); //if a-bit (see page 71) is 0, use A-Register. Otherwise, use D-Register.
+	ALU(x=outputDRegister ,y=inputALU ,zx=instruction[11] ,nx=instruction[10] ,zy=instruction[9] ,ny=instruction[8] ,f=instruction[7] ,no=instruction[6] ,out=outputALU ,out=outM ,zr=isZero ,ng=isNegative);
+
+	//Logic of the Program Counter
+	Not(in=isZero, out=isNotZero);
+	Not(in=isNegative, out=isPositiveOrZero);
+
+	// if least significant j-bit  == 1 AND comp > 0 -> jump (PC load == 1)	
+	And(a=isNotZero, b=isPositiveOrZero, out=isPositive);
+	And(a=instruction[0], b=isPositive, out=jgt);
+
+	// if most significant j-bit == 1 AND comp < 0 -> jump (PC load == 1)
+	And(a=isNegative, b=instruction[2], out=jlt);
+
+	// if middle j-bit == 1 AND comp == 0 -> jump (PC load == 1)
+	And(a=isZero, b=instruction[1], out=jeq);
+
+	//jump if (jeq == 1) OR (jlt == 1) OR (jgt == 1)
+	Or(a=jeq, b=jlt, out= jle);
+	Or(a=jle, b=jgt, out=jumpConditionTrue);
+	And(a=jumpConditionTrue, b=instruction[15], out=loadPC); //only jump if C-instruction
+	Not(in=loadPC, out=incPC); //increment if you don't jump
+	PC(in=outputARegister, load=loadPC, inc=incPC, reset=reset ,out[0..14]=pc);	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 }
